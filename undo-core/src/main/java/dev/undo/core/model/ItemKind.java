@@ -1,0 +1,11 @@
+package dev.undo.core.model;
+
+public enum ItemKind {
+  COMPENSATE,
+  IRREVERSIBLE,
+  CONFLICT,
+  ALREADY_REVERTED,
+  NO_EFFECT,
+  BLOCKED_IN_FLIGHT,
+  BLOCKED_NEEDS_REVIEW
+}

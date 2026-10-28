@@ -1,0 +1,16 @@
+package dev.undo.core.port;
+
+/** Deliberate engine bugs the simulator must catch (Section 21.7). */
+public enum Bug {
+  NEW_KEY_PER_ATTEMPT,
+  NO_FENCE_CHECK,
+  RETRY_UNKNOWN_WITHOUT_LOOKUP,
+  SKIP_LOOKUP_GRACE,
+  BUDGET_CHECK_THEN_ACT,
+  APPROVAL_NOT_HASH_BOUND,
+  JOURNAL_SKIPS_EXISTENCE_CHECK,
+  REVERT_TRUSTS_PREVIEW,
+  NONE_CLASS_RETRY,
+  RUNNER_NO_CALL_ID,
+  RESOLVER_IGNORES_FREEZE
+}

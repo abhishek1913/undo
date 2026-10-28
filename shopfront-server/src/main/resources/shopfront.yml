@@ -1,0 +1,42 @@
+spring:
+  application:
+    name: shopfront-server
+  autoconfigure:
+    # Shopfront does its own auth. Excluded by name so an in-process Shopfront in undo-server's
+    # tests (which have Spring Security on the classpath) behaves like the real one.
+    exclude:
+      - org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration
+      - org.springframework.boot.autoconfigure.security.servlet.SecurityFilterAutoConfiguration
+      - org.springframework.boot.autoconfigure.security.servlet.UserDetailsServiceAutoConfiguration
+      - org.springframework.boot.actuate.autoconfigure.security.servlet.ManagementWebSecurityAutoConfiguration
+  threads:
+    virtual:
+      enabled: true
+  datasource:
+    url: ${SHOP_DB_URL:jdbc:postgresql://localhost:5432/shopfront}
+    username: ${SHOP_DB_USER:shopfront}
+    password: ${SHOP_DB_PASSWORD:shopfront}
+    hikari:
+      maximum-pool-size: 30
+  flyway:
+    locations: classpath:db/shopfront-migration
+server:
+  port: ${SHOP_PORT:8090}
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+shop:
+  api-key: ${SHOP_API_KEY:shop_local_api_key_change_me}
+  admin-token: ${SHOP_ADMIN_TOKEN:shop_local_admin_token_change_me}
+  webhook-url: ${SHOP_WEBHOOK_URL:http://localhost:8080/webhooks/shopfront}
+  webhook-secret: ${SHOP_WEBHOOK_SECRET:whsec_local_change_me_0123456789}
+  settlement-delay: ${SHOP_SETTLEMENT_DELAY:PT10M}
+  export-lag: ${SHOP_EXPORT_LAG:PT15M}
+  idempotency-ttl: ${SHOP_IDEMPOTENCY_TTL:PT24H}
+  jobs-enabled: ${SHOP_JOBS_ENABLED:true}
+  page-enabled: ${SHOP_PAGE_ENABLED:true}
+logging:
+  level:
+    root: INFO

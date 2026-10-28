@@ -1,0 +1,602 @@
+{
+ "uid": "undo-overview",
+ "title": "Undo overview",
+ "tags": [
+  "undo"
+ ],
+ "timezone": "browser",
+ "schemaVersion": 39,
+ "version": 1,
+ "refresh": "5s",
+ "time": {
+  "from": "now-15m",
+  "to": "now"
+ },
+ "panels": [
+  {
+   "id": 1,
+   "type": "timeseries",
+   "title": "Proposals by decision (per s)",
+   "description": "",
+   "datasource": {
+    "type": "prometheus",
+    "uid": "prometheus"
+   },
+   "gridPos": {
+    "x": 0,
+    "y": 0,
+    "w": 8,
+    "h": 7
+   },
+   "targets": [
+    {
+     "refId": "A",
+     "expr": "sum by (decision) (rate(undo_actions_proposed_total[1m]))",
+     "legendFormat": "{{decision}}",
+     "datasource": {
+      "type": "prometheus",
+      "uid": "prometheus"
+     }
+    }
+   ],
+   "fieldConfig": {
+    "defaults": {
+     "unit": "ops"
+    },
+    "overrides": []
+   }
+  },
+  {
+   "id": 2,
+   "type": "timeseries",
+   "title": "Outcomes (per s)",
+   "description": "",
+   "datasource": {
+    "type": "prometheus",
+    "uid": "prometheus"
+   },
+   "gridPos": {
+    "x": 8,
+    "y": 0,
+    "w": 8,
+    "h": 7
+   },
+   "targets": [
+    {
+     "refId": "A",
+     "expr": "sum by (outcome) (rate(undo_action_outcomes_total[1m]))",
+     "legendFormat": "{{outcome}}",
+     "datasource": {
+      "type": "prometheus",
+      "uid": "prometheus"
+     }
+    }
+   ],
+   "fieldConfig": {
+    "defaults": {
+     "unit": "ops"
+    },
+    "overrides": []
+   }
+  },
+  {
+   "id": 3,
+   "type": "timeseries",
+   "title": "Actions by status",
+   "description": "",
+   "datasource": {
+    "type": "prometheus",
+    "uid": "prometheus"
+   },
+   "gridPos": {
+    "x": 16,
+    "y": 0,
+    "w": 8,
+    "h": 7
+   },
+   "targets": [
+    {
+     "refId": "A",
+     "expr": "max by (status) (undo_actions_by_status > 0)",
+     "legendFormat": "{{status}}",
+     "datasource": {
+      "type": "prometheus",
+      "uid": "prometheus"
+     }
+    }
+   ],
+   "fieldConfig": {
+    "defaults": {},
+    "overrides": []
+   }
+  },
+  {
+   "id": 4,
+   "type": "stat",
+   "title": "UNKNOWN actions now",
+   "description": "",
+   "datasource": {
+    "type": "prometheus",
+    "uid": "prometheus"
+   },
+   "gridPos": {
+    "x": 0,
+    "y": 7,
+    "w": 4,
+    "h": 7
+   },
+   "targets": [
+    {
+     "refId": "A",
+     "expr": "max(undo_actions_by_status{status=\"UNKNOWN\"}) or vector(0)",
+     "legendFormat": "UNKNOWN",
+     "datasource": {
+      "type": "prometheus",
+      "uid": "prometheus"
+     }
+    }
+   ],
+   "fieldConfig": {
+    "defaults": {},
+    "overrides": []
+   }
+  },
+  {
+   "id": 5,
+   "type": "timeseries",
+   "title": "UNKNOWN resolution time p50 / p95",
+   "description": "",
+   "datasource": {
+    "type": "prometheus",
+    "uid": "prometheus"
+   },
+   "gridPos": {
+    "x": 4,
+    "y": 7,
+    "w": 8,
+    "h": 7
+   },
+   "targets": [
+    {
+     "refId": "A",
+     "expr": "histogram_quantile(0.5, sum by (le) (rate(undo_unknown_resolution_seconds_bucket[5m])))",
+     "legendFormat": "p50",
+     "datasource": {
+      "type": "prometheus",
+      "uid": "prometheus"
+     }
+    },
+    {
+     "refId": "B",
+     "expr": "histogram_quantile(0.95, sum by (le) (rate(undo_unknown_resolution_seconds_bucket[5m])))",
+     "legendFormat": "p95",
+     "datasource": {
+      "type": "prometheus",
+      "uid": "prometheus"
+     }
+    }
+   ],
+   "fieldConfig": {
+    "defaults": {
+     "unit": "s"
+    },
+    "overrides": []
+   }
+  },
+  {
+   "id": 6,
+   "type": "timeseries",
+   "title": "Stale fence rejections / lease expirations (5 m)",
+   "description": "",
+   "datasource": {
+    "type": "prometheus",
+    "uid": "prometheus"
+   },
+   "gridPos": {
+    "x": 12,
+    "y": 7,
+    "w": 6,
+    "h": 7
+   },
+   "targets": [
+    {
+     "refId": "A",
+     "expr": "sum(increase(undo_stale_fence_rejections_total[5m])) or vector(0)",
+     "legendFormat": "stale fence",
+     "datasource": {
+      "type": "prometheus",
+      "uid": "prometheus"
+     }
+    },
+    {
+     "refId": "B",
+     "expr": "sum(increase(undo_lease_expirations_total[5m])) or vector(0)",
+     "legendFormat": "lease expired",
+     "datasource": {
+      "type": "prometheus",
+      "uid": "prometheus"
+     }
+    }
+   ],
+   "fieldConfig": {
+    "defaults": {},
+    "overrides": []
+   }
+  },
+  {
+   "id": 7,
+   "type": "stat",
+   "title": "Approvals pending",
+   "description": "",
+   "datasource": {
+    "type": "prometheus",
+    "uid": "prometheus"
+   },
+   "gridPos": {
+    "x": 18,
+    "y": 7,
+    "w": 3,
+    "h": 7
+   },
+   "targets": [
+    {
+     "refId": "A",
+     "expr": "max(undo_approvals_pending) or vector(0)",
+     "legendFormat": "pending",
+     "datasource": {
+      "type": "prometheus",
+      "uid": "prometheus"
+     }
+    }
+   ],
+   "fieldConfig": {
+    "defaults": {},
+    "overrides": []
+   }
+  },
+  {
+   "id": 8,
+   "type": "stat",
+   "title": "Budget denials (5 m)",
+   "description": "",
+   "datasource": {
+    "type": "prometheus",
+    "uid": "prometheus"
+   },
+   "gridPos": {
+    "x": 21,
+    "y": 7,
+    "w": 3,
+    "h": 7
+   },
+   "targets": [
+    {
+     "refId": "A",
+     "expr": "sum(increase(undo_budget_denials_total[5m])) or vector(0)",
+     "legendFormat": "denials",
+     "datasource": {
+      "type": "prometheus",
+      "uid": "prometheus"
+     }
+    }
+   ],
+   "fieldConfig": {
+    "defaults": {},
+    "overrides": []
+   }
+  },
+  {
+   "id": 9,
+   "type": "timeseries",
+   "title": "Recon findings open",
+   "description": "",
+   "datasource": {
+    "type": "prometheus",
+    "uid": "prometheus"
+   },
+   "gridPos": {
+    "x": 0,
+    "y": 14,
+    "w": 6,
+    "h": 7
+   },
+   "targets": [
+    {
+     "refId": "A",
+     "expr": "sum by (severity) (max by (type, severity) (undo_recon_findings_open)) or vector(0)",
+     "legendFormat": "{{severity}}",
+     "datasource": {
+      "type": "prometheus",
+      "uid": "prometheus"
+     }
+    }
+   ],
+   "fieldConfig": {
+    "defaults": {},
+    "overrides": []
+   }
+  },
+  {
+   "id": 10,
+   "type": "timeseries",
+   "title": "Provider requests by status (per s)",
+   "description": "",
+   "datasource": {
+    "type": "prometheus",
+    "uid": "prometheus"
+   },
+   "gridPos": {
+    "x": 6,
+    "y": 14,
+    "w": 9,
+    "h": 7
+   },
+   "targets": [
+    {
+     "refId": "A",
+     "expr": "sum by (http_status) (rate(undo_provider_requests_total[1m]))",
+     "legendFormat": "{{http_status}}",
+     "datasource": {
+      "type": "prometheus",
+      "uid": "prometheus"
+     }
+    }
+   ],
+   "fieldConfig": {
+    "defaults": {
+     "unit": "ops"
+    },
+    "overrides": []
+   }
+  },
+  {
+   "id": 11,
+   "type": "timeseries",
+   "title": "Provider error ratio",
+   "description": "",
+   "datasource": {
+    "type": "prometheus",
+    "uid": "prometheus"
+   },
+   "gridPos": {
+    "x": 15,
+    "y": 14,
+    "w": 9,
+    "h": 7
+   },
+   "targets": [
+    {
+     "refId": "A",
+     "expr": "sum(rate(undo_provider_requests_total{http_status!~\"2..\"}[1m])) / sum(rate(undo_provider_requests_total[1m]))",
+     "legendFormat": "errors",
+     "datasource": {
+      "type": "prometheus",
+      "uid": "prometheus"
+     }
+    }
+   ],
+   "fieldConfig": {
+    "defaults": {
+     "unit": "percentunit"
+    },
+    "overrides": []
+   }
+  },
+  {
+   "id": 12,
+   "type": "timeseries",
+   "title": "Inline overhead p50 / p95 / p99 (Undo only)",
+   "description": "",
+   "datasource": {
+    "type": "prometheus",
+    "uid": "prometheus"
+   },
+   "gridPos": {
+    "x": 0,
+    "y": 21,
+    "w": 8,
+    "h": 7
+   },
+   "targets": [
+    {
+     "refId": "A",
+     "expr": "histogram_quantile(0.5, sum by (le) (rate(undo_action_overhead_seconds_bucket[1m])))",
+     "legendFormat": "p50",
+     "datasource": {
+      "type": "prometheus",
+      "uid": "prometheus"
+     }
+    },
+    {
+     "refId": "B",
+     "expr": "histogram_quantile(0.95, sum by (le) (rate(undo_action_overhead_seconds_bucket[1m])))",
+     "legendFormat": "p95",
+     "datasource": {
+      "type": "prometheus",
+      "uid": "prometheus"
+     }
+    },
+    {
+     "refId": "C",
+     "expr": "histogram_quantile(0.99, sum by (le) (rate(undo_action_overhead_seconds_bucket[1m])))",
+     "legendFormat": "p99",
+     "datasource": {
+      "type": "prometheus",
+      "uid": "prometheus"
+     }
+    }
+   ],
+   "fieldConfig": {
+    "defaults": {
+     "unit": "s"
+    },
+    "overrides": []
+   }
+  },
+  {
+   "id": 13,
+   "type": "timeseries",
+   "title": "Provider time p95 by tool",
+   "description": "",
+   "datasource": {
+    "type": "prometheus",
+    "uid": "prometheus"
+   },
+   "gridPos": {
+    "x": 8,
+    "y": 21,
+    "w": 8,
+    "h": 7
+   },
+   "targets": [
+    {
+     "refId": "A",
+     "expr": "histogram_quantile(0.95, sum by (le, tool) (rate(undo_action_execution_seconds_bucket[1m])))",
+     "legendFormat": "{{tool}}",
+     "datasource": {
+      "type": "prometheus",
+      "uid": "prometheus"
+     }
+    }
+   ],
+   "fieldConfig": {
+    "defaults": {
+     "unit": "s"
+    },
+    "overrides": []
+   }
+  },
+  {
+   "id": 14,
+   "type": "timeseries",
+   "title": "Webhooks (per s)",
+   "description": "",
+   "datasource": {
+    "type": "prometheus",
+    "uid": "prometheus"
+   },
+   "gridPos": {
+    "x": 16,
+    "y": 21,
+    "w": 8,
+    "h": 7
+   },
+   "targets": [
+    {
+     "refId": "A",
+     "expr": "sum by (type, result) (rate(undo_webhooks_total[1m]))",
+     "legendFormat": "{{type}} {{result}}",
+     "datasource": {
+      "type": "prometheus",
+      "uid": "prometheus"
+     }
+    }
+   ],
+   "fieldConfig": {
+    "defaults": {
+     "unit": "ops"
+    },
+    "overrides": []
+   }
+  },
+  {
+   "id": 15,
+   "type": "timeseries",
+   "title": "LLM tokens (per s)",
+   "description": "",
+   "datasource": {
+    "type": "prometheus",
+    "uid": "prometheus"
+   },
+   "gridPos": {
+    "x": 0,
+    "y": 28,
+    "w": 10,
+    "h": 7
+   },
+   "targets": [
+    {
+     "refId": "A",
+     "expr": "sum by (kind) (rate(undo_llm_tokens_total[1m]))",
+     "legendFormat": "{{kind}}",
+     "datasource": {
+      "type": "prometheus",
+      "uid": "prometheus"
+     }
+    }
+   ],
+   "fieldConfig": {
+    "defaults": {
+     "unit": "short"
+    },
+    "overrides": []
+   }
+  },
+  {
+   "id": 16,
+   "type": "timeseries",
+   "title": "LLM cache hit ratio",
+   "description": "",
+   "datasource": {
+    "type": "prometheus",
+    "uid": "prometheus"
+   },
+   "gridPos": {
+    "x": 10,
+    "y": 28,
+    "w": 7,
+    "h": 7
+   },
+   "targets": [
+    {
+     "refId": "A",
+     "expr": "sum(rate(undo_llm_tokens_total{kind=\"cache_read\"}[5m])) / sum(rate(undo_llm_tokens_total{kind=~\"input|cache_read\"}[5m]))",
+     "legendFormat": "cache_read / (input + cache_read)",
+     "datasource": {
+      "type": "prometheus",
+      "uid": "prometheus"
+     }
+    }
+   ],
+   "fieldConfig": {
+    "defaults": {
+     "unit": "percentunit"
+    },
+    "overrides": []
+   }
+  },
+  {
+   "id": 17,
+   "type": "timeseries",
+   "title": "LLM turn time p95",
+   "description": "",
+   "datasource": {
+    "type": "prometheus",
+    "uid": "prometheus"
+   },
+   "gridPos": {
+    "x": 17,
+    "y": 28,
+    "w": 7,
+    "h": 7
+   },
+   "targets": [
+    {
+     "refId": "A",
+     "expr": "histogram_quantile(0.95, sum by (le) (rate(undo_llm_turn_seconds_bucket[5m])))",
+     "legendFormat": "p95",
+     "datasource": {
+      "type": "prometheus",
+      "uid": "prometheus"
+     }
+    }
+   ],
+   "fieldConfig": {
+    "defaults": {
+     "unit": "s"
+    },
+    "overrides": []
+   }
+  }
+ ]
+}

@@ -1,0 +1,65 @@
+spring:
+  application:
+    name: undo-server
+  threads:
+    virtual:
+      enabled: true
+  datasource:
+    url: ${UNDO_DB_URL:jdbc:postgresql://localhost:5432/undo}
+    username: ${UNDO_DB_USER:undo}
+    password: ${UNDO_DB_PASSWORD:undo}
+    hikari:
+      maximum-pool-size: 20
+  flyway:
+    enabled: true
+  jackson:
+    property-naming-strategy: SNAKE_CASE
+  mvc:
+    async:
+      request-timeout: -1
+server:
+  port: ${SERVER_PORT:8080}
+  shutdown: immediate
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,prometheus
+  endpoint:
+    health:
+      probes:
+        enabled: true
+  tracing:
+    enabled: ${UNDO_TRACING:false}
+    sampling:
+      probability: 1.0
+  otlp:
+    tracing:
+      endpoint: ${OTEL_ENDPOINT:http://localhost:4318/v1/traces}
+undo:
+  roles: ${UNDO_ROLES:api,worker}
+  node-id: ${UNDO_NODE_ID:}
+  webhooks:
+    shopfront:
+      secret: ${SHOP_WEBHOOK_SECRET:whsec_local_change_me_0123456789}
+  connectors:
+    shopfront:
+      base-url: ${SHOP_BASE_URL:http://localhost:8090}
+      api-key: ${SHOP_API_KEY:shop_local_api_key_change_me}
+      admin-token: ${SHOP_ADMIN_TOKEN:shop_local_admin_token_change_me}
+      export-lag: ${SHOP_EXPORT_LAG:PT15M}
+  agent:
+    mode: ${UNDO_AGENT_MODE:scripted}
+  auth:
+    jwt-secret: ${UNDO_JWT_SECRET:local-dev-jwt-secret-change-me-0123456789abcdef}
+    bootstrap-admin-email: ${UNDO_BOOTSTRAP_ADMIN_EMAIL:}
+    bootstrap-admin-password: ${UNDO_BOOTSTRAP_ADMIN_PASSWORD:}
+  demo:
+    enabled: ${UNDO_DEMO:false}
+    agent-key: ${UNDO_DEMO_AGENT_KEY:}
+  chaos:
+    halt-probability: ${UNDO_CHAOS_HALT_PROBABILITY:0.0}
+logging:
+  level:
+    root: INFO
+    org.springframework.security: WARN

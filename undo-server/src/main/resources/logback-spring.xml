@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+  <!-- 24.3: JSON to stdout. MDC keys run, action, task, fence come from spans; node is the host. -->
+  <appender name="JSON" class="ch.qos.logback.core.ConsoleAppender">
+    <encoder class="net.logstash.logback.encoder.LogstashEncoder">
+      <customFields>{"node":"${HOSTNAME:-local}"}</customFields>
+      <mdcKeyFieldName>traceId=trace_id</mdcKeyFieldName>
+      <excludeMdcKeyName>spanId</excludeMdcKeyName>
+      <throwableConverter class="net.logstash.logback.stacktrace.ShortenedThrowableConverter">
+        <maxDepthPerThrowable>12</maxDepthPerThrowable>
+      </throwableConverter>
+    </encoder>
+  </appender>
+  <springProfile name="!plainlogs">
+    <root level="INFO"><appender-ref ref="JSON"/></root>
+  </springProfile>
+  <springProfile name="plainlogs">
+    <include resource="org/springframework/boot/logging/logback/base.xml"/>
+  </springProfile>
+</configuration>

@@ -1,0 +1,88 @@
+apiVersion: undo.dev/v1
+kind: Policy
+metadata:
+  name: support-default
+  description: Default policy for support agents working the Shopfront ticket queue.
+spec:
+  defaultDecision: deny
+  budgets: { moneyOutMinor: 100000000, actions: 2000, llmTokens: 6000000 }
+  approvals: { expiresAfter: PT24H }
+  tools:
+    shop_list_open_tickets: { default: allow }
+    shop_get_ticket:        { default: allow }
+    shop_get_order:         { default: allow }
+    shop_get_customer:      { default: allow }
+    undo_run_status:        { default: allow }
+
+    shop_issue_refund:
+      default: allow
+      rules:
+        - id: refund.hard-cap
+          decision: deny
+          reason: Refunds above ₹1,00,000 are never allowed for agents.
+          when: { field: args.amount_minor, op: gt, value: 10000000 }
+        - id: refund.not-more-than-refundable
+          decision: deny
+          reason: The amount is more than what is still refundable on this order.
+          when: { field: args.amount_minor, op: gt, ref: facts.order.refundable_minor }
+        - id: refund.ticket-owner-matches-order
+          decision: deny
+          reason: The order does not belong to the customer who opened the ticket.
+          when:
+            all:
+              - { field: facts.ticket, op: exists }
+              - { field: facts.ticket.customer_id, op: neq, ref: facts.order.customer_id }
+        - id: refund.ticket-order-matches
+          decision: deny
+          reason: The ticket is about a different order.
+          when:
+            all:
+              - { field: facts.ticket.order_id, op: exists }
+              - { field: facts.ticket.order_id, op: neq, ref: args.order_id }
+        - id: refund.large-needs-human
+          decision: require_approval
+          reason: Refunds above ₹10,000 need a human.
+          when: { field: args.amount_minor, op: gt, value: 1000000 }
+
+    shop_grant_store_credit:
+      default: allow
+      rules:
+        - id: credit.hard-cap
+          decision: deny
+          reason: Store credit above ₹5,000 is never allowed for agents.
+          when: { field: args.amount_minor, op: gt, value: 500000 }
+        - id: credit.customer-matches-ticket
+          decision: deny
+          reason: Credit must go to the customer who opened the ticket.
+          when:
+            all:
+              - { field: facts.ticket, op: exists }
+              - { field: facts.ticket.customer_id, op: neq, ref: args.customer_id }
+        - id: credit.needs-human
+          decision: require_approval
+          reason: Store credit above ₹2,000 needs a human.
+          when: { field: args.amount_minor, op: gt, value: 200000 }
+
+    shop_send_email:
+      default: allow
+      rules:
+        - id: email.customer-matches-ticket
+          decision: deny
+          reason: Emails can only go to the customer who opened the ticket.
+          when:
+            all:
+              - { field: facts.ticket, op: exists }
+              - { field: facts.ticket.customer_id, op: neq, ref: args.customer_id }
+        - id: email.correction-needs-human
+          decision: require_approval
+          reason: Correction emails are reviewed by a human.
+          when: { field: args.template, op: eq, value: correction }
+
+    shop_close_ticket: { default: allow }
+    shop_set_order_note: { default: allow }
+
+    # compensations (only used with ctx.kind = COMPENSATION)
+    shop_cancel_refund:       { default: allow }
+    shop_revoke_store_credit: { default: allow }
+    shop_reopen_ticket:       { default: allow }
+    shop_restore_order_note:  { default: allow }

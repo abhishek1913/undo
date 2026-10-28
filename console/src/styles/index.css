@@ -1,0 +1,109 @@
+@import 'tailwindcss';
+@import './tokens.css';
+
+@theme {
+  --font-sans: 'Manrope', ui-sans-serif, system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, monospace;
+  --color-bg: var(--bg);
+  --color-surface: var(--surface);
+  --color-surface-2: var(--surface-2);
+  --color-ink: var(--ink);
+  --color-ink-2: var(--ink-2);
+  --color-line: var(--line);
+  --color-accent: var(--accent);
+  --color-accent-fill: var(--accent-fill);
+  --color-on-accent: var(--on-accent);
+  --color-ok: var(--ok);
+  --color-warn: var(--warn);
+  --color-bad: var(--bad);
+  --color-info: var(--info);
+  --color-unknown: var(--unknown);
+  --color-muted: var(--muted);
+  --radius-card: 8px;
+}
+
+html,
+body {
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--font-sans);
+  font-size: 14px;
+  -webkit-font-smoothing: antialiased;
+  font-feature-settings: 'cv11', 'ss01';
+}
+
+::selection {
+  background: color-mix(in srgb, var(--accent) 22%, transparent);
+}
+
+/* Form controls: one look on every page. Utilities on the element still win (base layer). */
+:root {
+  --chevron: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%235e5750' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+}
+:root[data-theme='dark'] {
+  --chevron: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23a89f95' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+}
+@layer base {
+  input:not([type='checkbox'], [type='radio'], [type='range']),
+  select,
+  textarea {
+    min-height: 32px;
+  }
+  input:not([type='checkbox'], [type='radio'], [type='range']):hover,
+  select:hover,
+  textarea:hover {
+    border-color: color-mix(in srgb, var(--ink-2) 40%, var(--line));
+  }
+  input:not([type='checkbox'], [type='radio'], [type='range']):focus-visible,
+  select:focus-visible,
+  textarea:focus-visible {
+    border-color: var(--accent);
+    outline: 2px solid color-mix(in srgb, var(--accent) 35%, transparent);
+    outline-offset: 0;
+  }
+  input::placeholder,
+  textarea::placeholder {
+    color: var(--muted);
+  }
+  select {
+    appearance: none;
+    background-image: var(--chevron);
+    background-repeat: no-repeat;
+    background-position: right 8px center;
+    background-size: 14px;
+    padding-right: 28px !important;
+  }
+  input[type='checkbox'],
+  input[type='radio'],
+  input[type='range'] {
+    accent-color: var(--accent-fill);
+  }
+  input[type='checkbox'],
+  input[type='radio'] {
+    width: 15px;
+    height: 15px;
+  }
+  input[type='range'] {
+    cursor: pointer;
+  }
+}
+
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .fade-in {
+    animation: fade-in 150ms ease-out;
+  }
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}

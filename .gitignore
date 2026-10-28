@@ -1,0 +1,14 @@
+target/
+*.class
+.idea/
+*.iml
+.vscode/
+.DS_Store
+.env
+out/
+node_modules/
+console/dist/
+console/test-results/
+console/playwright-report/
+*.log
+showcase/dist/

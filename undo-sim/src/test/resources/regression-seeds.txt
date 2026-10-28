@@ -1,0 +1,23 @@
+# Seeds that caught a bug. Format: BUG_NAME seed.
+# Re-hunted whenever the simulated world gains features (make sim-bugs).
+# Each line must pass without bug flags and still fail with its flag (checked by every `make sim`).
+# NONE = a real engine bug the simulator found; the fix has its own unit test
+# (EngineScenarioTest.notAppliedAnswerAfterFreezeEndsTheAction for seed 2183, ADR-014 #7).
+NONE 2183
+# Seed 35294: late compensation of an earlier plan lease holder (ADR-018,
+# RevertScenarioTest.lateCompensationOfAnEarlierLeaseHolderIsLinkedNotAlreadyGone).
+NONE 35294
+# Seed 12055: a failed compensation after the refund failed at settlement (ADR-019 #1,
+# RevertScenarioTest.compensationThatFailsAfterTheRefundFailedIsAlreadyGone).
+NONE 12055
+NEW_KEY_PER_ATTEMPT 1
+NO_FENCE_CHECK 6
+RETRY_UNKNOWN_WITHOUT_LOOKUP 2
+SKIP_LOOKUP_GRACE 2
+BUDGET_CHECK_THEN_ACT 33
+APPROVAL_NOT_HASH_BOUND 17
+NONE_CLASS_RETRY 2
+RESOLVER_IGNORES_FREEZE 13
+REVERT_TRUSTS_PREVIEW 2
+JOURNAL_SKIPS_EXISTENCE_CHECK 2
+RUNNER_NO_CALL_ID 2

@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <parent><groupId>dev.undo</groupId><artifactId>undo-parent</artifactId><version>0.1.0-SNAPSHOT</version></parent>
+  <artifactId>undo-server</artifactId>
+  <name>undo-server</name>
+  <description>Spring Boot server: REST, MCP, console API, webhooks, SSE, workers.</description>
+
+  <dependencies>
+    <dependency><groupId>dev.undo</groupId><artifactId>undo-core</artifactId></dependency>
+    <dependency><groupId>dev.undo</groupId><artifactId>connector-shopfront</artifactId></dependency>
+    <dependency><groupId>org.springframework.boot</groupId><artifactId>spring-boot-starter-web</artifactId></dependency>
+    <dependency><groupId>org.springframework.boot</groupId><artifactId>spring-boot-starter-actuator</artifactId></dependency>
+    <dependency><groupId>org.springframework.boot</groupId><artifactId>spring-boot-starter-jdbc</artifactId></dependency>
+    <dependency><groupId>org.springframework.boot</groupId><artifactId>spring-boot-starter-security</artifactId></dependency>
+    <dependency><groupId>org.flywaydb</groupId><artifactId>flyway-core</artifactId></dependency>
+    <dependency><groupId>org.flywaydb</groupId><artifactId>flyway-database-postgresql</artifactId></dependency>
+    <dependency><groupId>org.postgresql</groupId><artifactId>postgresql</artifactId></dependency>
+    <dependency><groupId>io.micrometer</groupId><artifactId>micrometer-registry-prometheus</artifactId></dependency>
+    <dependency><groupId>io.micrometer</groupId><artifactId>micrometer-tracing-bridge-otel</artifactId></dependency>
+    <dependency><groupId>io.opentelemetry</groupId><artifactId>opentelemetry-exporter-otlp</artifactId></dependency>
+    <dependency><groupId>net.logstash.logback</groupId><artifactId>logstash-logback-encoder</artifactId></dependency>
+    <dependency><groupId>com.nimbusds</groupId><artifactId>nimbus-jose-jwt</artifactId></dependency>
+    <dependency><groupId>com.bucket4j</groupId><artifactId>bucket4j_jdk17-core</artifactId></dependency>
+    <dependency><groupId>com.github.f4b6a3</groupId><artifactId>uuid-creator</artifactId></dependency>
+    <dependency><groupId>com.anthropic</groupId><artifactId>anthropic-java</artifactId></dependency>
+
+    <dependency><groupId>org.springframework.boot</groupId><artifactId>spring-boot-starter-test</artifactId><scope>test</scope></dependency>
+    <dependency><groupId>org.springframework.boot</groupId><artifactId>spring-boot-testcontainers</artifactId><scope>test</scope></dependency>
+    <dependency><groupId>org.testcontainers</groupId><artifactId>postgresql</artifactId><scope>test</scope></dependency>
+    <dependency><groupId>org.testcontainers</groupId><artifactId>junit-jupiter</artifactId><scope>test</scope></dependency>
+    <dependency><groupId>io.micrometer</groupId><artifactId>micrometer-tracing-test</artifactId><scope>test</scope></dependency>
+    <dependency><groupId>com.tngtech.archunit</groupId><artifactId>archunit-junit5</artifactId><scope>test</scope></dependency>
+    <dependency><groupId>dev.undo</groupId><artifactId>undo-core</artifactId><type>test-jar</type><scope>test</scope></dependency>
+    <dependency><groupId>dev.undo</groupId><artifactId>shopfront-server</artifactId><version>${project.version}</version><scope>test</scope></dependency>
+  </dependencies>
+
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-maven-plugin</artifactId>
+        <executions><execution><goals><goal>repackage</goal></goals><configuration><classifier>exec</classifier></configuration></execution></executions>
+      </plugin>
+    </plugins>
+  </build>
+</project>

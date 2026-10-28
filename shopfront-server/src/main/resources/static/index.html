@@ -1,0 +1,114 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Shopfront — provider view</title>
+<style>
+  :root { --bg:#f4f6f8; --surface:#fff; --ink:#1b2430; --ink-2:#5b6573; --line:#dde2e8; --ok:#2f7d4f; --bad:#b83a3a; --warn:#b7791f; }
+  @media (prefers-color-scheme: dark) {
+    :root { --bg:#12161b; --surface:#1a2027; --ink:#e6ebf0; --ink-2:#9aa5b1; --line:#2c343d; --ok:#5bb882; --bad:#e06b6b; --warn:#e0a84a; }
+  }
+  * { box-sizing: border-box; }
+  body { margin:0; background:var(--bg); color:var(--ink); font: 14px/1.4 system-ui, -apple-system, "Segoe UI", sans-serif; }
+  header { padding:14px 20px; border-bottom:1px solid var(--line); background:var(--surface); display:flex; justify-content:space-between; align-items:center; gap:12px; flex-wrap:wrap; }
+  h1 { font-size:18px; margin:0; }
+  h2 { font-size:14px; margin:0 0 8px; text-transform:uppercase; letter-spacing:.04em; color:var(--ink-2); }
+  main { padding:16px 20px; display:grid; gap:16px; }
+  .card { background:var(--surface); border:1px solid var(--line); border-radius:8px; padding:14px; overflow-x:auto; }
+  .inv { display:grid; grid-template-columns:repeat(auto-fit, minmax(180px, 1fr)); gap:10px; }
+  .counter { border-radius:8px; padding:12px; border:2px solid var(--ok); }
+  .counter.bad { border-color:var(--bad); }
+  .counter .n { font: 600 28px/1.1 ui-monospace, monospace; }
+  .counter.ok .n { color:var(--ok); } .counter.bad .n { color:var(--bad); }
+  .counter .l { color:var(--ink-2); font-size:12px; margin-top:4px; }
+  table { border-collapse:collapse; width:100%; font-size:13px; }
+  th, td { text-align:left; padding:5px 8px; border-bottom:1px solid var(--line); white-space:nowrap; }
+  th { color:var(--ink-2); font-weight:600; }
+  td.mono { font-family: ui-monospace, monospace; font-size:12px; }
+  .grid2 { display:grid; grid-template-columns:repeat(auto-fit, minmax(420px, 1fr)); gap:16px; }
+  .muted { color:var(--ink-2); }
+  button { font:inherit; font-size:12px; padding:3px 8px; border:1px solid var(--line); background:var(--bg); color:var(--ink); border-radius:6px; cursor:pointer; }
+  button:focus-visible { outline:2px solid var(--warn); outline-offset:2px; }
+  .status-settled, .status-sent, .status-active { color:var(--ok); }
+  .status-failed, .status-revoked, .status-cancelled { color:var(--bad); }
+  .status-pending, .status-queued { color:var(--warn); }
+</style>
+</head>
+<body>
+<header>
+  <h1>Shopfront — provider view</h1>
+  <span class="muted">The "real system" in the demo. Refreshes every 2 s. <span id="updated"></span></span>
+</header>
+<main>
+  <section class="card" aria-labelledby="inv-h">
+    <h2 id="inv-h">Invariant check</h2>
+    <div class="inv" id="inv"></div>
+  </section>
+  <div class="grid2">
+    <section class="card"><h2>Latest refunds</h2><table id="refunds"></table></section>
+    <section class="card"><h2>Store credits</h2><table id="credits"></table></section>
+  </div>
+  <div class="grid2">
+    <section class="card"><h2>Latest emails</h2><table id="emails"></table></section>
+    <section class="card"><h2>Tickets and counts</h2><table id="stats"></table></section>
+  </div>
+  <section class="card"><h2>LOST orders and orders with notes</h2><table id="orders"></table></section>
+</main>
+<script>
+const LABELS = {
+  orders_with_multiple_undo_refunds: 'Orders with more than one refund',
+  undo_action_ids_on_multiple_refunds: 'Actions with more than one refund',
+  store_credit_references_used_twice: 'Store credit references used twice',
+  undo_action_ids_on_multiple_emails: 'Actions with more than one email',
+  over_refunded_orders: 'Over-refunded orders'
+};
+const rupees = m => new Intl.NumberFormat('en-IN', {style:'currency', currency:'INR'}).format(m / 100);
+const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+function table(el, head, rows) {
+  document.getElementById(el).innerHTML =
+    '<thead><tr>' + head.map(h => '<th>' + h + '</th>').join('') + '</tr></thead><tbody>' +
+    (rows.length ? rows.join('') : '<tr><td colspan="' + head.length + '" class="muted">None yet.</td></tr>') + '</tbody>';
+}
+async function editNote(id, current) {
+  const note = prompt('New note for ' + id + ' (a human edit):', current || '');
+  if (note === null) return;
+  await fetch('/page/orders/' + encodeURIComponent(id) + '/note', {method:'PUT', headers:{'Content-Type':'application/json'}, body: JSON.stringify({note})});
+  refresh();
+}
+async function refresh() {
+  let d;
+  try { d = await (await fetch('/page/data')).json(); } catch (e) { return; }
+  document.getElementById('inv').innerHTML = Object.keys(LABELS).map(k => {
+    const n = d.invariants[k] ?? 0;
+    return '<div class="counter ' + (n === 0 ? 'ok' : 'bad') + '"><div class="n">' + n + '</div><div class="l">' + LABELS[k] + '</div></div>';
+  }).join('');
+  table('refunds', ['Id', 'Order', 'Amount', 'Status', 'undo_action_id'], d.refunds.map(r =>
+    '<tr><td class="mono">' + esc(r.id) + '</td><td class="mono">' + esc(r.order_id) + '</td><td>' + rupees(r.amount_minor) +
+    '</td><td class="status-' + esc(r.status) + '">' + esc(r.status) + '</td><td class="mono">' + esc(r.metadata.undo_action_id) + '</td></tr>'));
+  table('credits', ['Id', 'Customer', 'Amount', 'Balance', 'Status', 'Reference'], d.store_credits.map(c =>
+    '<tr><td class="mono">' + esc(c.id) + '</td><td class="mono">' + esc(c.customer_id) + '</td><td>' + rupees(c.amount_minor) +
+    '</td><td>' + rupees(c.balance_minor) + '</td><td class="status-' + esc(c.status) + '">' + esc(c.status) + '</td><td class="mono">' + esc(c.reference) + '</td></tr>'));
+  table('emails', ['Id', 'Customer', 'Template', 'Status', 'undo_action_id'], d.emails.map(e =>
+    '<tr><td class="mono">' + esc(e.id) + '</td><td class="mono">' + esc(e.customer_id) + '</td><td>' + esc(e.template) +
+    '</td><td class="status-' + esc(e.status) + '">' + esc(e.status) + '</td><td class="mono">' + esc(e.metadata.undo_action_id) + '</td></tr>'));
+  const s = d.stats;
+  const statRows = ['tickets', 'refunds', 'store_credits', 'emails'].map(k =>
+    '<tr><td>' + k.replace('_', ' ') + '</td><td>' + Object.entries(s[k]).map(([a, b]) => esc(a) + ': ' + b).join(' · ') + '</td></tr>');
+  statRows.push('<tr><td>webhooks pending</td><td>' + s.webhooks_pending + '</td></tr>');
+  table('stats', ['What', 'Counts'], statRows);
+  const seen = new Set();
+  const orders = [...d.lost_orders, ...d.orders_with_notes].filter(o => !seen.has(o.id) && seen.add(o.id));
+  table('orders', ['Order', 'Customer', 'Item', 'Total', 'Carrier', 'Refunded', 'Note', 'v', ''], orders.map(o =>
+    '<tr><td class="mono">' + esc(o.id) + '</td><td class="mono">' + esc(o.customer_id) + '</td><td>' + esc(o.item_name) +
+    '</td><td>' + rupees(o.total_minor) + '</td><td>' + esc(o.carrier_status) + '</td><td>' + rupees(o.refunded_minor) +
+    '</td><td>' + esc(o.note) + '</td><td>' + o.note_version + '</td><td><button type="button" data-id="' + esc(o.id) +
+    '" data-note="' + esc(o.note) + '">Edit note</button></td></tr>'));
+  document.querySelectorAll('#orders button').forEach(b => b.onclick = () => editNote(b.dataset.id, b.dataset.note));
+  document.getElementById('updated').textContent = 'Updated ' + new Date().toLocaleTimeString();
+}
+refresh();
+setInterval(refresh, 2000);
+</script>
+</body>
+</html>
