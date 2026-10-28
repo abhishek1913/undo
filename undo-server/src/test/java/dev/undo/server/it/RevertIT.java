@@ -45,6 +45,9 @@ class RevertIT extends StackTestSupport {
 
   @Test
   void revertOfAMixedRunCancelsWhatItCanAndReportsTheRest() throws Exception {
+    // Shopfront is shared by every IT and ReconIT plants a duplicate refund on purpose, so the
+    // invariants are checked as "not raised by this test" rather than "zero".
+    JsonNode before = shop("GET", "/admin/invariants", null);
     UUID run = newRun(null);
     String settled =
         propose(run, "shop_issue_refund", refund(freshOrder(), 2500), null)
@@ -170,7 +173,12 @@ class RevertIT extends StackTestSupport {
           }
         });
     JsonNode inv = shop("GET", "/admin/invariants", null);
-    inv.properties().forEach(f -> assertThat(f.getValue().asLong()).as(f.getKey()).isZero());
+    inv.properties()
+        .forEach(
+            f ->
+                assertThat(f.getValue().asLong())
+                    .as(f.getKey())
+                    .isEqualTo(before.get(f.getKey()).asLong()));
   }
 
   @Test
