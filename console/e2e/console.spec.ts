@@ -75,7 +75,8 @@ test('bulk approve sends each card hash', async ({ page }) => {
   await expect(page.getByTestId('approval-card')).toHaveCount(2);
   await page.getByRole('button', { name: 'Select all' }).click();
   await page.getByRole('button', { name: 'Approve selected (2)' }).click();
-  await expect(page.getByText('Approved 2 of 2')).toBeVisible();
+  // exact: Radix also announces the toast for about a second as "Notification Approved 2 of 2"
+  await expect(page.getByText('Approved 2 of 2', { exact: true })).toBeVisible();
   await expectActionStatus(page, a1, 'SUCCEEDED');
   await expectActionStatus(page, a2, 'SUCCEEDED');
 });
